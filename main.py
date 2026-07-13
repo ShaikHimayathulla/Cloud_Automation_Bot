@@ -22,7 +22,8 @@ def send_to_telegram(message):
     
     # This completely cleans the credentials and forces a perfect link structure
     clean_token = str(TELEGRAM_TOKEN).strip()
-    url = f"https://telegram.org{clean_token}/sendMessage"
+url = f"https://api.telegram.org/bot{clean_token}/sendMessage"
+
     
     payload = {"chat_id": str(TELEGRAM_CHAT_ID).strip(), "text": message}
     try:
