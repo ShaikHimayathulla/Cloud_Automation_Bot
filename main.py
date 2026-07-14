@@ -56,6 +56,6 @@ def trigger_bot():
     return "Bot executed successfully!", 200
 
 if __name__ == "__main__":
+    # Notice the 4 spaces of indentation below!
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
-
