@@ -32,7 +32,8 @@ def get_recent_telegram_links():
 @app.route('/trigger')
 def trigger_bot():
     # 1. Look back 120 minutes to beat the API cache delay
-    time_threshold = datetime.utcnow() - timedelta(minutes=120)
+    time_threshold = datetime.utcnow() - timedelta(minutes=1440)
+
 
     # 2. Fetch tech news 
     url = f"https://newsapi.org/v2/top-headlines?category=technology&language=en&apiKey={NEWS_API_KEY}"
