@@ -15,8 +15,9 @@ def trigger_bot():
     # 1. Look back 24 hours to ensure we ALWAYS find news
     time_threshold = datetime.utcnow() - timedelta(minutes=1440)
 
-    # 2. Fetch tech news
-    url = f"https://newsapi.org/v2/top-headlines?category=technology&language=en&apiKey={NEWS_API_KEY}"
+        # 2. Fetch tech news using a query keyword so it ALWAYS returns articles
+    url = f"https://newsapi.org/v2/everything?q=technology&language=en&sortBy=publishedAt&apiKey={NEWS_API_KEY}"
+
     response = requests.get(url).json()
     articles = response.get("articles", [])
 
