@@ -1,46 +1,34 @@
 import os
 import requests
 from flask import Flask
-from datetime import datetime, timedelta
 
 app = Flask(__name__)
 
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
-NEWS_API_KEY = os.environ.get("NEWS_API_KEY")
 
 @app.route('/')
 @app.route('/trigger')
 def trigger_bot():
-    # 1. Look back 24 hours to ensure we ALWAYS find news
-    time_threshold = datetime.utcnow() - timedelta(minutes=1440)
+    # Fetch news from TechCrunch's official free RSS-to-JSON API (No API key needed, never blocks Render!)
+    url = "https://api.rss2json.com/v1/api.json?rss_url=https://techcrunch.com/feed/"
+    
+    try:
+        response = requests.get(url).json()
+        articles = response.get("items", [])
+    except Exception as e:
+        return f"Failed to fetch RSS news feed: {str(e)}", 500
 
-        # 2. Fetch tech news using a simplified, highly-reliable headline query
-    url = f"https://newsapi.org/v2/top-headlines?sources=techcrunch&apiKey={NEWS_API_KEY}"
+    if not articles:
+        return "No tech news found in the RSS feed right now.", 200
 
-    response = requests.get(url).json()
-    articles = response.get("articles", [])
-
-    # 3. Filter for fresh articles
-    fresh_articles = []
-    for art in articles:
-        pub_time_str = art.get("publishedAt")
-        if pub_time_str:
-            clean_time_str = pub_time_str.replace("Z", "")
-            pub_time = datetime.fromisoformat(clean_time_str)
-            if pub_time > time_threshold:
-                fresh_articles.append(art)
-
-    if not fresh_articles:
-        return "No tech news found in the global feed for the last 24 hours.", 200
-
-    # 4. Build report (grabs the top 5 stories)
+    # Build report (grabs the top 5 stories)
     report = "Latest Breaking Tech News:\n"
     count = 1
     
-    for art in fresh_articles:
+    for art in articles:
         title = art.get("title")
-        link = art.get("url")
+        link = art.get("link")
         
         if title and link:
             report += f"\n{count}. {title}\nLink: {link}\n"
@@ -49,7 +37,7 @@ def trigger_bot():
         if count > 5:
             break
 
-    # 5. Send directly to Telegram
+    # Send directly to Telegram
     telegram_url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
     payload = {
         "chat_id": TELEGRAM_CHAT_ID,
@@ -62,4 +50,5 @@ def trigger_bot():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
+
 
